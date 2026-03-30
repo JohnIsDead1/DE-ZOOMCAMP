@@ -5,6 +5,7 @@
 
 
 import pandas as pd
+import click
 from sqlalchemy import create_engine
 from tqdm.auto import tqdm
 
@@ -79,14 +80,16 @@ parse_dates = [
 
 # In[36]:
 
-def run():
-    year = 2021
-    month = 1
-    pg_user = 'root'
-    pg_password = 'root'
-    pg_host = 'localhost'
-    pg_port = 5433
-    pg_db = 'ny_taxi'
+@click.command()
+@click.option("--year", default=2021, type=int, show_default=True)
+@click.option("--month", default=1, type=int, show_default=True)
+@click.option("--pg-user", default="root", type=str, show_default=True)
+@click.option("--pg-password", default="root", type=str, show_default=True)
+@click.option("--pg-host", default="localhost", type=str, show_default=True)
+@click.option("--pg-port", default=5433, type=int, show_default=True)
+@click.option("--pg-db", default="ny_taxi", type=str, show_default=True)
+@click.option("--chunksize", default=100000, type=int, show_default=True)
+def run(year, month, pg_user, pg_password, pg_host, pg_port, pg_db, chunksize):
     prefix = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/'
     url = f'{prefix}yellow_tripdata_{year}-{month:02d}.csv.gz'
 
@@ -103,7 +106,7 @@ def run():
         dtype=dtype,
         parse_dates=parse_dates,
         iterator=True,
-        chunksize=100000
+        chunksize=chunksize
     )
 
     engine = create_engine(f'postgresql+psycopg://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_db}')
